@@ -60,5 +60,8 @@ public class TestSceneSetup : MonoBehaviour
         {
             bossPrefab.GetComponent<SpriteRenderer>().sortingLayerName = "Characters";
         }
+
+        // Start game music
+        SoundManager.Instance.PlayMusic("ExplorationMusic");
     }
 }
