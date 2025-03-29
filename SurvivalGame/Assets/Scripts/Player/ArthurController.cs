@@ -84,6 +84,7 @@ public class ArthurController : MonoBehaviour
     {
         isDodging = true;
         rb.velocity = lastDirection.normalized * dodgeSpeed;
+        SoundManager.Instance.PlaySound("PlayerDodge");
         
         yield return new WaitForSeconds(dodgeDuration);
         
@@ -96,6 +97,9 @@ public class ArthurController : MonoBehaviour
     void Attack()
     {
         if (!stats.UseStamina(attackStaminaCost)) return;
+        
+        // Play attack sound
+        SoundManager.Instance.PlaySound("PlayerAttack");
         
         // Detect enemies in range
         Collider2D[] hitEnemies = Physics2D.OverlapCircleAll(attackPoint.position, attackRange, enemyLayers);
@@ -112,6 +116,12 @@ public class ArthurController : MonoBehaviour
                 // Apply knockback
                 Vector2 knockbackDirection = (enemy.transform.position - transform.position).normalized;
                 DamageSystem.ApplyKnockback(enemy.GetComponent<Rigidbody2D>(), knockbackDirection, 5f);
+                
+                // Play hit sound if critical
+                if (isCritical)
+                {
+                    SoundManager.Instance.PlaySound("PlayerCriticalHit");
+                }
             }
         }
     }
@@ -127,6 +137,7 @@ public class ArthurController : MonoBehaviour
         if (!isDodging)
         {
             stats.TakeDamage(amount);
+            SoundManager.Instance.PlaySound("PlayerHurt");
         }
     }
 }
