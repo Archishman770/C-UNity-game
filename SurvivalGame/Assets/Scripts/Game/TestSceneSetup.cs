@@ -2,6 +2,8 @@ using UnityEngine;
 
 public class TestSceneSetup : MonoBehaviour
 {
+    [Header("UI")]
+    public GameObject hudPrefab;
     [Header("Player")]
     public GameObject playerPrefab;
     public Vector2 playerSpawnPosition = new Vector2(0, 0);
@@ -16,6 +18,12 @@ public class TestSceneSetup : MonoBehaviour
 
     void Start()
     {
+        // Initialize HUD
+        if (hudPrefab != null)
+        {
+            Instantiate(hudPrefab);
+        }
+
         // Spawn player
         GameObject player = Instantiate(
             playerPrefab, 
@@ -25,11 +33,14 @@ public class TestSceneSetup : MonoBehaviour
         player.tag = "Player";
 
         // Spawn boss
-        Instantiate(
-            bossPrefab, 
-            bossSpawnPosition, 
-            Quaternion.identity
-        );
+        if (bossPrefab != null)
+        {
+            Instantiate(
+                bossPrefab, 
+                bossSpawnPosition, 
+                Quaternion.identity
+            );
+        }
 
         // Camera setup
         Camera.main.orthographic = true;
