@@ -46,17 +46,20 @@ public class MainMenuController : MonoBehaviour
 
     public void StartGame()
     {
+        SoundManager.Instance.PlaySound("ButtonClick");
         SceneManager.LoadScene(gameSceneName);
     }
 
     public void OpenOptions()
     {
+        SoundManager.Instance.PlaySound("ButtonClick");
         // TODO: Implement options menu
         Debug.Log("Options menu opened");
     }
 
     public void QuitGame()
     {
+        SoundManager.Instance.PlaySound("ButtonClick");
         #if UNITY_EDITOR
             UnityEditor.EditorApplication.isPlaying = false;
         #else
