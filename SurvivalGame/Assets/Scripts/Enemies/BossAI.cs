@@ -26,6 +26,7 @@ public class BossAI : MonoBehaviour
         currentHealth = maxHealth;
         player = GameObject.FindGameObjectWithTag("Player").transform;
         OnBossSpawned?.Invoke(this);
+        SoundManager.Instance.PlaySound("BossSpawn");
     }
     
     void Update()
@@ -61,6 +62,7 @@ public class BossAI : MonoBehaviour
     void Attack()
     {
         // Implement boss-specific attack pattern
+        SoundManager.Instance.PlaySound("BossAttack");
         Debug.Log("Boss attacks!");
     }
     
@@ -69,12 +71,14 @@ public class BossAI : MonoBehaviour
         isEnraged = true;
         moveSpeed *= 1.5f;
         attackCooldown *= 0.7f;
+        SoundManager.Instance.PlaySound("BossEnrage");
         Debug.Log("Boss is enraged!");
     }
     
     public void TakeDamage(int damage)
     {
         currentHealth -= damage;
+        SoundManager.Instance.PlaySound("BossHurt");
         
         if (currentHealth <= 0)
         {
@@ -85,6 +89,7 @@ public class BossAI : MonoBehaviour
     void Die()
     {
         Debug.Log("Boss defeated!");
+        SoundManager.Instance.PlaySound("BossDeath");
         OnBossDefeated?.Invoke(this);
         Destroy(gameObject);
     }
