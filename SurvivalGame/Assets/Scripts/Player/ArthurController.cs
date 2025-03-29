@@ -1,28 +1,41 @@
 using UnityEngine;
+using System.Collections;
 
+[RequireComponent(typeof(PlayerStats))]
 public class ArthurController : MonoBehaviour
 {
     [Header("Movement")]
     public float moveSpeed = 5f;
     public float acceleration = 10f;
     public float deceleration = 15f;
+    public float dodgeSpeed = 12f;
+    public float dodgeDuration = 0.3f;
+    public float dodgeCooldown = 1f;
+    private float lastDodgeTime;
+    private bool isDodging;
     
     [Header("Combat")] 
     public Transform attackPoint;
     public float attackRange = 0.5f;
+    public float attackStaminaCost = 15f;
+    public float dodgeStaminaCost = 20f;
     public LayerMask enemyLayers;
     
     private Rigidbody2D rb;
     private Vector2 movement;
     private Vector2 lastDirection;
+    private PlayerStats stats;
     
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
+        stats = GetComponent<PlayerStats>();
     }
     
     void Update()
     {
+        if (isDodging) return;
+        
         // Input handling
         movement.x = Input.GetAxisRaw("Horizontal");
         movement.y = Input.GetAxisRaw("Vertical");
@@ -36,10 +49,17 @@ public class ArthurController : MonoBehaviour
         {
             Attack();
         }
+        
+        if (Input.GetKeyDown(KeyCode.Space) && Time.time > lastDodgeTime + dodgeCooldown)
+        {
+            TryDodge();
+        }
     }
     
     void FixedUpdate()
     {
+        if (isDodging) return;
+        
         // Movement physics
         if (movement.magnitude > 0)
         {
@@ -51,15 +71,48 @@ public class ArthurController : MonoBehaviour
         }
     }
     
+    void TryDodge()
+    {
+        if (stats.UseStamina(dodgeStaminaCost))
+        {
+            StartCoroutine(Dodge());
+            lastDodgeTime = Time.time;
+        }
+    }
+    
+    IEnumerator Dodge()
+    {
+        isDodging = true;
+        rb.velocity = lastDirection.normalized * dodgeSpeed;
+        
+        yield return new WaitForSeconds(dodgeDuration);
+        
+        isDodging = false;
+    }
+    
+    [Header("Combat Stats")]
+    public CharacterStats characterStats = new CharacterStats();
+    
     void Attack()
     {
+        if (!stats.UseStamina(attackStaminaCost)) return;
+        
         // Detect enemies in range
         Collider2D[] hitEnemies = Physics2D.OverlapCircleAll(attackPoint.position, attackRange, enemyLayers);
         
         // Damage enemies
         foreach(Collider2D enemy in hitEnemies)
         {
-            Debug.Log("Hit " + enemy.name);
+            BossAI boss = enemy.GetComponent<BossAI>();
+            if (boss != null)
+            {
+                bool isCritical = Random.value < characterStats.criticalChance;
+                DamageSystem.CalculateDamage(characterStats, boss, isCritical);
+                
+                // Apply knockback
+                Vector2 knockbackDirection = (enemy.transform.position - transform.position).normalized;
+                DamageSystem.ApplyKnockback(enemy.GetComponent<Rigidbody2D>(), knockbackDirection, 5f);
+            }
         }
     }
     
@@ -67,5 +120,13 @@ public class ArthurController : MonoBehaviour
     {
         if (attackPoint == null) return;
         Gizmos.DrawWireSphere(attackPoint.position, attackRange);
+    }
+    
+    public void TakeDamage(float amount)
+    {
+        if (!isDodging)
+        {
+            stats.TakeDamage(amount);
+        }
     }
 }
