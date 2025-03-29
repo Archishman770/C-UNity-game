@@ -2,12 +2,16 @@ using UnityEngine;
 
 public class BossAI : MonoBehaviour
 {
+    public static event System.Action<BossAI> OnBossSpawned;
+    public static event System.Action<BossAI> OnBossDefeated;
     [Header("Combat")]
+    public string bossName = "Boss";
     public int maxHealth = 100;
     public int currentHealth;
     public float attackCooldown = 2f;
     public float attackRange = 3f;
     public int damage = 10;
+    public int scoreValue = 1000;
     
     [Header("Movement")] 
     public float moveSpeed = 2f;
@@ -21,6 +25,7 @@ public class BossAI : MonoBehaviour
     {
         currentHealth = maxHealth;
         player = GameObject.FindGameObjectWithTag("Player").transform;
+        OnBossSpawned?.Invoke(this);
     }
     
     void Update()
@@ -80,6 +85,7 @@ public class BossAI : MonoBehaviour
     void Die()
     {
         Debug.Log("Boss defeated!");
+        OnBossDefeated?.Invoke(this);
         Destroy(gameObject);
     }
 }
